@@ -8,9 +8,10 @@ typedef struct Layer {
     int n_outputs;
     int sigmoid;
     Double** W;
+    Double** bias;
 } Layer;
 
-Layer* create_layer(int n_inputs, int n_outputs, int sigmoid) {
+Layer* create_layer(int n_inputs, int n_outputs, int sigmoid, int bias) {
     Layer* layer = (Layer*) malloc(sizeof(Layer));
     layer->n_inputs = n_inputs;
     layer->n_outputs = n_outputs;
@@ -18,6 +19,14 @@ Layer* create_layer(int n_inputs, int n_outputs, int sigmoid) {
     layer->W = (Double**) malloc(sizeof(Double*) * n_inputs * n_outputs);
     for (int w = 0; w < n_inputs * n_outputs; w++) {
         layer->W[w] = new_variable(rand() / (double) RAND_MAX * 0.01);
+    }
+    if (bias) {
+        layer->bias = (Double**) malloc(sizeof(Double*) * n_outputs);
+        for (int w = 0; w < n_outputs; w++) {
+            layer->bias[w] = new_variable(rand() / (double) RAND_MAX * 0.01);
+        }
+    } else {
+        layer->bias = NULL;
     }
     return layer;
 }
@@ -28,6 +37,9 @@ Double** layer(Layer* layer, Double** X) {
         outputs[i] = new_constant(0.0);
         for(int j = 0; j < layer->n_inputs; j++) {
             outputs[i] = add(outputs[i], multiply(X[j], layer->W[i * layer->n_inputs + j]));
+        }
+        if (layer->bias != NULL) {
+            outputs[i] = add(outputs[i], layer->bias[i]);
         }
         if (layer->sigmoid) {
             outputs[i] = sigmoid(outputs[i]);
@@ -85,12 +97,12 @@ int main(int n_args, char** args) {
 
     printf("Preparing model...\n");
     Layer* layers[2];
-    layers[0] = create_layer(4, 2, 1);
-    layers[1] = create_layer(2, 4, 0);
+    layers[0] = create_layer(4, 2, 1, 1);
+    layers[1] = create_layer(2, 4, 0, 1);
 
     printf("Training...\n");
     for (int e = 0; e < n_epochs; e++) {
-        for (int s = 0; s < n_samples - 1; s++) {
+        for (int s = 0; s < n_samples; s++) {
             Double** pred = forward_mlp(layers, 2, X + (s * n_inputs));
             Double* mse = loss(pred, Y + (s * n_outputs), n_outputs);
             printf("%f\n", mse->value);
@@ -100,6 +112,12 @@ int main(int n_args, char** args) {
                 for(int j = 0; j < layers[i]->n_outputs*layers[i]->n_inputs; j++) {
                     layers[i]->W[j]->value -= layers[i]->W[j]->derivative * learning_rate;
                     layers[i]->W[j]->derivative = 0.0;
+                }
+                if (layers[i]->bias != NULL) {
+                    for (int j = 0; j < layers[i]->n_outputs; j++) {
+                        layers[i]->bias[j]->value -= layers[i]->bias[j]->derivative * learning_rate;
+                        layers[i]->bias[j]->derivative = 0.0;
+                    }
                 }
             }
         }
