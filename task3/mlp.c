@@ -98,7 +98,7 @@ int main(int n_args, char** args) {
     printf("Preparing model...\n");
     Layer* layers[2];
     layers[0] = create_layer(4, 2, 1, 1);
-    layers[1] = create_layer(2, 4, 0, 1);
+    layers[1] = create_layer(2, 4, 1, 1);
 
     printf("Training...\n");
     for (int e = 0; e < n_epochs; e++) {
