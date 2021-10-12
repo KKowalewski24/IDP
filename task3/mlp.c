@@ -97,7 +97,7 @@ int main(int n_args, char** args) {
             backpropagate(mse);
 
             for(int i = 0; i < 2; i++) {
-                for(int j = 0; j < layers[i]->n_outputs; j++) {
+                for(int j = 0; j < layers[i]->n_outputs*layers[i]->n_inputs; j++) {
                     layers[i]->W[j]->value -= layers[i]->W[j]->derivative * learning_rate;
                     layers[i]->W[j]->derivative = 0.0;
                 }
