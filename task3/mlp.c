@@ -1,3 +1,4 @@
+#include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "autograd.h"
@@ -16,7 +17,7 @@ Layer* create_layer(int n_inputs, int n_outputs, int sigmoid) {
     layer->sigmoid = sigmoid;
     layer->W = (Double**) malloc(sizeof(Double*) * n_inputs * n_outputs);
     for (int w = 0; w < n_inputs * n_outputs; w++) {
-        layer->W[w] = new_double(rand() / (double) RAND_MAX * 0.1);
+        layer->W[w] = new_variable(rand() / (double) RAND_MAX * 0.1);
     }
     return layer;
 }
@@ -24,12 +25,9 @@ Layer* create_layer(int n_inputs, int n_outputs, int sigmoid) {
 Double** layer(Layer* layer, Double** X) {
     Double** outputs = (Double**) malloc(sizeof(Double*) * layer->n_outputs);
     for(int i = 0; i < layer->n_outputs; i++) {
+        outputs[i] = new_constant(0.0);
         for(int j = 0; j < layer->n_inputs; j++) {
-            if (j == 0) {
-                outputs[i] = multiply(X[j], layer->W[i * layer->n_inputs + j]);
-            } else {
-                outputs[i] = add(outputs[i], multiply(X[j], layer->W[i * layer->n_inputs + j]));
-            }
+            outputs[i] = add(outputs[i], multiply(X[j], layer->W[i * layer->n_inputs + j]));
         }
         if (layer->sigmoid) {
             outputs[i] = sigmoid(outputs[i]);
@@ -46,28 +44,25 @@ Double** forward_mlp(Layer** layers, int n_layers, Double** X) {
 }
 
 Double* loss(Double** pred, Double** gt, int n) {
-    Double* result;
+    Double* sum = new_constant(0.0);
     for(int i = 0; i < n; i++) {
         Double* err = subtract(gt[i], pred[i]);
-        if (i == 0) {
-            result = multiply(err, err);
-        } else {
-            result = add(result, multiply(err, err));
-        }
+        sum = add(sum, multiply(err, err));
     }
-    return result;
+    return divide(sum, new_constant(n));
 }
 
 int main() {
+    srand(time(0));
     Layer* layers[2];
     layers[0] = create_layer(4, 2, 1);
     layers[1] = create_layer(2, 4, 1);
 
     Double** X = (Double**) malloc(sizeof(Double*) * 4);
-    X[0] = new_double(1.0);
-    X[1] = new_double(0.0);
-    X[2] = new_double(0.0);
-    X[3] = new_double(0.0);
+    X[0] = new_variable(1.0);
+    X[1] = new_variable(0.0);
+    X[2] = new_variable(0.0);
+    X[3] = new_variable(0.0);
 
     for(int e = 0; e < 1000; e++) {
         Double** pred = forward_mlp(layers, 2, X);

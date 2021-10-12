@@ -12,7 +12,11 @@ typedef struct Double {
     double* local_gradient;
 } Double;
 
-Double* new_double(double value);
+void delete_double(Double* d);
+
+Double* new_variable(double value);
+
+Double* new_constant(double value);
 
 Double* add(Double* a, Double* b);
 
