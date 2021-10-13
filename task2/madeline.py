@@ -50,4 +50,4 @@ if __name__ == "__main__":
     test_images = Image.read_from_file("test_images.txt")
     for test_image in test_images:
         pred = madeline(test_image)
-        print(f"{test_image.name} : {list(zip(madeline.labels, pred))}")
+        print(f"{test_image.name} : {list(zip(madeline.labels, np.round(pred, 3)))}")
