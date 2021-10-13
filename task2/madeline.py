@@ -4,7 +4,7 @@ import numpy as np
 
 class Image():
     def __init__(self, n_rows, n_cols, lines: List[str]):
-        self.name = lines[0]
+        self.name = lines[0][:-1]
         lines = lines[1:]
         self.data = np.zeros(shape=(n_rows, n_cols), dtype=np.uint8)
         for row in range(n_rows):
@@ -33,20 +33,21 @@ class Image():
         return images
 
 
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    images = Image.read_from_file('test.txt')
-    for image in images:
-        plt.imshow(image.data)
-        plt.show()
+class Madeline():
+    def __init__(self, template_images: List[Image]):
+        W = []
+        for template_image in template_images:
+            W.append(np.reshape(template_image.data, (-1,)) / np.count_nonzero(template_image.data))
+        self.W = np.array(W)
+        self.labels = [image.name for image in template_images]
 
-# class Madeline():
-#     def __init__(self, n_inputs, n_outpus):
-#         self.n_inputs = n_inputs
-#         self.n_outputs = n_outputs
-#         self.weights = np.zeros(size=(n_outputs, n_inputs))
-#
-#     def __call__(self, image):
-#         return np.matmul(self.weights, X)
-#
-#     def train(self, images):
+    def __call__(self, image):
+        return np.matmul(self.W, np.reshape(image.data, (-1)))
+
+
+if __name__ == "__main__":
+    madeline = Madeline(Image.read_from_file("template_images.txt"))
+    test_images = Image.read_from_file("test_images.txt")
+    for test_image in test_images:
+        pred = madeline(test_image)
+        print(f"{test_image.name} : {list(zip(madeline.labels, pred))}")

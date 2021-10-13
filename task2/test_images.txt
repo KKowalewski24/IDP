@@ -1,0 +1,27 @@
+4
+4
+4 
+
+disturbed letter "X" 
+##-# 
+-##- 
+-##- 
+---# 
+ 
+disturbed letter "Y" 
+#--# 
+--## 
+-#-- 
+#--- 
+ 
+undisturbed letter "Z" 
+#### 
+--#- 
+-#-- 
+#### 
+ 
+negative of letter "Y" 
+-##- 
+#--# 
+#-## 
+-###
