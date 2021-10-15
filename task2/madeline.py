@@ -1,5 +1,7 @@
 from typing import List
 import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
 
 
 class Image():
@@ -16,6 +18,7 @@ class Image():
                     self.data[row, col] = 1
                 else:
                     raise ValueError(character)
+        self.data = self.data / np.sqrt(np.count_nonzero(self.data))
 
     @staticmethod
     def read_from_file(filename):
@@ -37,7 +40,7 @@ class Madeline():
     def __init__(self, template_images: List[Image]):
         W = []
         for template_image in template_images:
-            W.append(np.reshape(template_image.data, (-1,)) / np.count_nonzero(template_image.data))
+            W.append(np.reshape(template_image.data, (-1,)))
         self.W = np.array(W)
         self.labels = [image.name for image in template_images]
 
@@ -46,8 +49,30 @@ class Madeline():
 
 
 if __name__ == "__main__":
-    madeline = Madeline(Image.read_from_file("template_images.txt"))
+    # read template and test images
+    template_images = Image.read_from_file("template_images.txt")
     test_images = Image.read_from_file("test_images.txt")
+
+    # render it (warning - pretty hardcoded!!!)
+    for i, template_image in enumerate(template_images):
+        plt.subplot(1, 3, i + 1)
+        plt.title(template_image.name)
+        plt.xticks([])
+        plt.yticks([])
+        plt.imshow(template_image.data)
+    plt.show()
+    for i, test_image in enumerate(test_images):
+        plt.subplot(3, 3, i + 1)
+        plt.title(test_image.name)
+        plt.xticks([])
+        plt.yticks([])
+        plt.imshow(test_image.data)
+    plt.show()
+
+    # create MADELINE network
+    madeline = Madeline(template_images)
+
+    # test it
     for test_image in test_images:
         pred = madeline(test_image)
         print(f"{test_image.name} : {list(zip(madeline.labels, np.round(pred, 3)))}")
