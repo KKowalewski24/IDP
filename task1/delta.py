@@ -19,9 +19,10 @@ def train(N, M, K, n, w_min, w_max, p_min, p_max):
     # test
     for x, z in zip(X, Z):
         y = np.sum(w * x)
-        print(f"z = {z}, y = {y}")
+        print(f"z = {np.round(z,4)}, y = {np.round(y,4)}")
 
 if __name__ == "__main__":
+    np.random.seed(47)
     parser = argparse.ArgumentParser()
     parser.add_argument('-N', type=int, required=True)
     parser.add_argument('-M', type=int, required=True)
