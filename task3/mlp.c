@@ -126,9 +126,11 @@ int main(int n_args, char** args) {
     printf("Test...\n"); /* hardcoded for 4 inputs and 4 outputs */
     for (int s = 0; s < n_samples; s++) {
         Double** x = X + (s * n_inputs);
-        Double** result = forward_mlp(layers, 2, x);
-        printf("UWAGA: %f %f %f %f   --->   %f %f %f %f\n", 
+        Double** y1 = layer(layers[0], x);
+        Double** y2 = layer(layers[1], y1);
+        printf("UWAGA: %.4f %.4f %.4f %.4f\t--->\t%.4f %.4f\t--->\t%.4f %.4f %.4f %.4f\n", 
                 x[0]->value, x[1]->value, x[2]->value, x[3]->value,
-                result[0]->value, result[1]->value, result[2]->value, result[3]->value);
+                y1[0]->value, y1[1]->value,
+                y2[0]->value, y2[1]->value, y2[2]->value, y2[3]->value);
     }
 }
