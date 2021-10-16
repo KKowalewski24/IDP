@@ -16,7 +16,7 @@ static void add_temporary_double(Double* d) {
     *temporary_double_iterator = d;
     temporary_double_iterator++;
     if (temporary_double_iterator == temporary_doubles + N_TEMPORARY_DOUBLES) {
-        printf("Out of memory for temporary doubles!");
+        printf("Out of memory for temporary doubles!\n");
         exit(1);
     }
 }
