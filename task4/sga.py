@@ -54,8 +54,8 @@ def sga(decimal_digits, number_of_populations, population_size,
     for population_idx in range(number_of_populations):
         # calculate selection probabilities for population
         selection_probabilities = fitness_values / np.sum(fitness_values)
-        for i in range(len(selection_probabilities)):
-            selection_probabilities[i + 1:] += selection_probabilities[i]
+        for i in reversed(range(len(selection_probabilities))):
+            selection_probabilities[i] = np.sum(selection_probabilities[:i+1])
 
         # create new population using genetic operators
         new_population = []
