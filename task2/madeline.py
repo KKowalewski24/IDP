@@ -1,10 +1,11 @@
 from typing import List
-import numpy as np
-import matplotlib
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class Image():
+
     def __init__(self, n_rows, n_cols, lines: List[str]):
         self.name = lines[0][:-1]
         lines = lines[1:]
@@ -19,6 +20,7 @@ class Image():
                 else:
                     raise ValueError(character)
         self.data = self.data / np.sqrt(np.count_nonzero(self.data))
+
 
     @staticmethod
     def read_from_file(filename):
@@ -37,12 +39,14 @@ class Image():
 
 
 class Madeline():
+
     def __init__(self, template_images: List[Image]):
         W = []
         for template_image in template_images:
             W.append(np.reshape(template_image.data, (-1,)))
         self.W = np.array(W)
         self.labels = [image.name for image in template_images]
+
 
     def __call__(self, image):
         return np.matmul(self.W, np.reshape(image.data, (-1)))
