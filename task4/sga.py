@@ -32,7 +32,7 @@ def _roulette_selection(population, selection_probabilities):
 
 
 def sga(decimal_digits, number_of_populations, population_size,
-        crossover_probability, mutation_probability):
+        crossover_probability, mutation_probability, verbose=False):
 
     # find proper number of bits (required to be lower then 64 - the size of uint64)
     number_of_bits = np.ceil(
@@ -77,7 +77,9 @@ def sga(decimal_digits, number_of_populations, population_size,
                     _roulette_selection(population, selection_probabilities))
         population = np.array(new_population[:population_size])
         fitness_values = fitness(_decode(population, min_value, max_value, MAX))
-        print(f"{population_idx+1}/{number_of_populations}\t{np.max(fitness_values)}")
+        if verbose:
+            print(f"{population_idx+1}/{number_of_populations}\t{np.max(fitness_values)}")
+    return _decode(population[np.argmax(fitness_values)], min_value, max_value, MAX)
 
 
 if __name__ == "__main__":
@@ -87,6 +89,8 @@ if __name__ == "__main__":
     parser.add_argument("-M", type=int, required=True)
     parser.add_argument("-pc", type=float, required=True)
     parser.add_argument("-pm", type=float, required=True)
+    parser.add_argument("-v", action='store_true')
     args = parser.parse_args()
 
-    sga(args.p, args.N, args.M, args.pc, args.pm)
+    best_solution = sga(args.p, args.N, args.M, args.pc, args.pm, args.v)
+    print(f"Best solution: {best_solution} -> {fitness(best_solution)}")
