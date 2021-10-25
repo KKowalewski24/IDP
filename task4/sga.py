@@ -1,5 +1,7 @@
 import argparse
 import numpy as np
+import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 min_value = 0.5
 max_value = 2.5
@@ -31,8 +33,12 @@ def _roulette_selection(population, selection_probabilities):
         selection_probabilities < np.random.rand())]
 
 
-def sga(decimal_digits, number_of_populations, population_size,
-        crossover_probability, mutation_probability, verbose=False):
+def sga(decimal_digits,
+        number_of_populations,
+        population_size,
+        crossover_probability,
+        mutation_probability,
+        verbose=False):
 
     # find proper number of bits (required to be lower then 64 - the size of uint64)
     number_of_bits = np.ceil(
@@ -51,11 +57,13 @@ def sga(decimal_digits, number_of_populations, population_size,
                                    dtype=np.uint64)
     fitness_values = fitness(_decode(population, min_value, max_value, MAX))
 
+    maxes = []
     for population_idx in range(number_of_populations):
         # calculate selection probabilities for population
         selection_probabilities = fitness_values / np.sum(fitness_values)
         for i in reversed(range(len(selection_probabilities))):
-            selection_probabilities[i] = np.sum(selection_probabilities[:i+1])
+            selection_probabilities[i] = np.sum(selection_probabilities[:i +
+                                                                        1])
 
         # create new population using genetic operators
         new_population = []
@@ -76,10 +84,16 @@ def sga(decimal_digits, number_of_populations, population_size,
                 new_population.append(
                     _roulette_selection(population, selection_probabilities))
         population = np.array(new_population[:population_size])
-        fitness_values = fitness(_decode(population, min_value, max_value, MAX))
+        fitness_values = fitness(_decode(population, min_value, max_value,
+                                         MAX))
         if verbose:
-            print(f"{population_idx+1}/{number_of_populations}\t{np.max(fitness_values)}")
-    return _decode(population[np.argmax(fitness_values)], min_value, max_value, MAX)
+            maxes.append(np.max(fitness_values))
+            print(f"{population_idx+1}/{number_of_populations}\t{maxes[-1]}")
+    if verbose:
+        plt.plot(maxes)
+        plt.show()
+    return _decode(population[np.argmax(fitness_values)], min_value, max_value,
+                   MAX)
 
 
 if __name__ == "__main__":
@@ -90,7 +104,17 @@ if __name__ == "__main__":
     parser.add_argument("-pc", type=float, required=True)
     parser.add_argument("-pm", type=float, required=True)
     parser.add_argument("-v", action='store_true')
+    parser.add_argument("-R", type=int, required=False)
     args = parser.parse_args()
 
-    best_solution = sga(args.p, args.N, args.M, args.pc, args.pm, args.v)
-    print(f"Best solution: {best_solution} -> {fitness(best_solution)}")
+    if args.R is None:
+        best_solution = sga(args.p, args.N, args.M, args.pc, args.pm, args.v)
+        print(f"Best solution: {best_solution} -> {fitness(best_solution)}")
+    else:
+        counter = 0
+        for i in tqdm(range(args.R)):
+            best_solution = sga(args.p, args.N, args.M, args.pc, args.pm,
+                                args.v)
+            if fitness(best_solution) > 10.0:
+                counter += 1
+        print(f"Global optimum found {counter} times!")
