@@ -1,6 +1,7 @@
 import argparse
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 from tqdm import tqdm
 
 min_value = 0.5
@@ -16,8 +17,7 @@ def _decode(x, min_value, max_value, MAX):
 
 
 def _mutate(x, number_of_bits):
-    return x ^ (
-        np.uint64(1) << np.random.randint(0, number_of_bits, dtype=np.uint64))
+    return x ^ (np.uint64(1) << np.random.randint(0, number_of_bits, dtype=np.uint64))
 
 
 def _crossover(x, y, number_of_bits, MAX):
@@ -39,11 +39,9 @@ def sga(decimal_digits,
         crossover_probability,
         mutation_probability,
         verbose=False):
-
     # find proper number of bits (required to be lower then 64 - the size of uint64)
     number_of_bits = np.ceil(
-        np.log2((max_value - min_value) * (10**decimal_digits) + 1)).astype(
-            np.uint8)
+        np.log2((max_value - min_value) * (10 ** decimal_digits) + 1)).astype(np.uint8)
     if number_of_bits >= 64:
         raise ValueError(
             "Too high representation accuracy - number of subintervals (max value) can not be represented by uint64"
@@ -53,7 +51,7 @@ def sga(decimal_digits,
     # create initial population
     population = np.random.randint(0,
                                    MAX + 1,
-                                   size=(population_size, ),
+                                   size=(population_size,),
                                    dtype=np.uint64)
     fitness_values = fitness(_decode(population, min_value, max_value, MAX))
 
@@ -62,8 +60,7 @@ def sga(decimal_digits,
         # calculate selection probabilities for population
         selection_probabilities = fitness_values / np.sum(fitness_values)
         for i in reversed(range(len(selection_probabilities))):
-            selection_probabilities[i] = np.sum(selection_probabilities[:i +
-                                                                        1])
+            selection_probabilities[i] = np.sum(selection_probabilities[:i + 1])
 
         # create new population using genetic operators
         new_population = []
@@ -88,7 +85,7 @@ def sga(decimal_digits,
                                          MAX))
         if verbose:
             maxes.append(np.max(fitness_values))
-            print(f"{population_idx+1}/{number_of_populations}\t{maxes[-1]}")
+            print(f"{population_idx + 1}/{number_of_populations}\t{maxes[-1]}")
     if verbose:
         plt.plot(maxes)
         plt.show()
