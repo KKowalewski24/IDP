@@ -30,7 +30,7 @@ def compress_image(filename, number_of_neurons, crop_size, number_of_crops,
         )
         kohonen.training_step(learning_rate=learning_rate)
 
-    # compress image - replace each crop with activated neuron weights
+    # simulate decoded image view - replace each crop with activated neuron weights
     for i in range(0, image.shape[0], crop_size):
         for j in range(0, image.shape[1], crop_size):
             winner = kohonen.winner(
@@ -39,6 +39,14 @@ def compress_image(filename, number_of_neurons, crop_size, number_of_crops,
                   j:j + crop_size] = np.reshape(kohonen.W[winner],
                                                 (crop_size, crop_size))
     cv2.imwrite("output.png", image)
+
+    # calculate compression ratio
+    not_compressed_size = image.shape[0] * image.shape[1] * 8
+    compressed_size = (image.shape[0] / crop_size) * (
+        image.shape[1] / crop_size) * np.ceil(np.log2(
+            number_of_neurons)) + crop_size * crop_size * number_of_neurons * 8
+    compression_ratio = compressed_size / not_compressed_size
+    print(f"Compression ratio: {compression_ratio}")
 
 
 if __name__ == '__main__':
