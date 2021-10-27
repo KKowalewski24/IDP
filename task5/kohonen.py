@@ -32,7 +32,7 @@ class KohonenNetwork():
             winners.add(winner)
 
         # reset total loosers (dead neurons)
-        loosers = np.array(list(set(range(len(W))) - winners), dtype=np.int32)
+        loosers = list(set(range(len(W))) - winners)
         W[loosers] = self.random_generator.uniform(np.min(self.X),
                                                    np.max(self.X),
                                                    size=(len(loosers),
@@ -40,7 +40,7 @@ class KohonenNetwork():
         if self.normalize:
             W = W / np.sqrt(np.sum(W**2, axis=1, keepdims=True))
 
-        self._max_winner_step = np.max(self.W - W)
+        self._max_winner_step = np.max(self.W[list(winners)] - W[list(winners)])
         self._n_loosers = len(loosers)
         self.W = W
 
