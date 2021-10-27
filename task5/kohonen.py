@@ -17,15 +17,18 @@ class KohonenNetwork():
             self.W = self.W / np.sqrt(np.sum(self.W**2, axis=1, keepdims=True))
             self.orig_X = X
 
+    def winner(self, x):
+        if self.normalize:
+            return np.argmax(np.matmul(self.W, x))
+        else:
+            return np.argmin(np.sum((self.W - x)**2, axis=1))
+
     def training_step(self, learning_rate):
         winners = set()
         W = self.W.copy()
         for x in self.X:
             # find winner
-            if self.normalize:
-                winner = np.argmax(np.matmul(W, x))
-            else:
-                winner = np.argmin(np.sum((W - x)**2, axis=1))
+            winner = self.winner(x)
 
             # update winner
             W[winner] += learning_rate * (x - W[winner])
