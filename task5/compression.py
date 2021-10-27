@@ -1,4 +1,5 @@
 import argparse
+
 import cv2
 import numpy as np
 from kohonen import KohonenNetwork
@@ -11,12 +12,10 @@ def compress_image(filename, number_of_neurons, crop_size, number_of_crops,
 
     # extract random crops
     random_crops = np.array([
-        np.reshape(image[x:x + crop_size, y:y + crop_size], (-1, ))
+        np.reshape(image[x:x + crop_size, y:y + crop_size], (-1,))
         for x, y in zip(
-            np.random.randint(
-                0, image.shape[0] - crop_size, size=(number_of_crops, )),
-            np.random.randint(
-                0, image.shape[1] - crop_size, size=(number_of_crops, )))
+            np.random.randint(0, image.shape[0] - crop_size, size=(number_of_crops,)),
+            np.random.randint(0, image.shape[1] - crop_size, size=(number_of_crops,)))
     ])
 
     # clusterize random crops using kohonen network
@@ -33,11 +32,10 @@ def compress_image(filename, number_of_neurons, crop_size, number_of_crops,
     # simulate decoded image view - replace each crop with activated neuron weights
     for i in range(0, image.shape[0], crop_size):
         for j in range(0, image.shape[1], crop_size):
-            winner = kohonen.winner(
-                np.reshape(image[i:i + crop_size, j:j + crop_size], (-1, )))
-            image[i:i + crop_size,
-                  j:j + crop_size] = np.reshape(kohonen.W[winner],
-                                                (crop_size, crop_size))
+            winner = kohonen.winner(np.reshape(image[i:i + crop_size, j:j + crop_size], (-1,)))
+            image[i:i + crop_size, j:j + crop_size] = np.reshape(
+                kohonen.W[winner], (crop_size, crop_size)
+            )
     cv2.imwrite("output.png", image)
 
     # calculate compression ratio
