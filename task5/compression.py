@@ -45,10 +45,12 @@ def compress_image(filename, number_of_neurons, crop_size, number_of_crops,
     plt.show()
 
     # calculate compression ratio
-    not_compressed_size = image.shape[0] * image.shape[1] * 8
-    compressed_size = (image.shape[0] / crop_size) * (
-        image.shape[1] / crop_size) * np.ceil(np.log2(
-            number_of_neurons)) + crop_size * crop_size * number_of_neurons * 8
+    n_image_pixels = image.shape[0] * image.shape[1]
+    n_crop_pixels = crop_size * crop_size
+    not_compressed_size = n_image_pixels * 8
+    compressed_size = (n_image_pixels / n_crop_pixels) * np.ceil(np.log2(number_of_neurons)) + n_crop_pixels * number_of_neurons * 8
+    if normalize:
+        compressed_size += (n_image_pixels / n_crop_pixels) * 8
     compression_ratio = compressed_size / not_compressed_size
     print(f"Compression ratio: {compression_ratio}")
 
