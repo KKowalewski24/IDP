@@ -5,6 +5,14 @@ import matplotlib.pyplot as plt
 from kohonen import KohonenNetwork
 
 
+def mse(X, Y):
+    return np.mean((X.astype(np.float32) - Y.astype(np.float32))**2)
+
+
+def psnr(X, Y):
+    return 10 * np.log10(255.0**2 / mse(X, Y))
+
+
 def compress_image(filename, number_of_neurons, crop_size, number_of_crops,
                    learning_rate, normalize):
     # read image
@@ -35,11 +43,13 @@ def compress_image(filename, number_of_neurons, crop_size, number_of_crops,
     decoded_image = np.empty_like(image, dtype=np.float32)
     for i in range(0, image.shape[0], crop_size):
         for j in range(0, image.shape[1], crop_size):
-            crop = np.reshape(image[i:i + crop_size, j:j + crop_size], (-1, )).astype(np.float32)
+            crop = np.reshape(image[i:i + crop_size, j:j + crop_size],
+                              (-1, )).astype(np.float32)
             factor = np.sqrt(np.sum(crop**2)) if normalize else 1.0
             crop = crop / factor
             winner = kohonen.winner(crop)
-            decoded_image[i:i + crop_size, j:j + crop_size] = np.reshape(kohonen.W[winner], (crop_size, crop_size)) * factor
+            decoded_image[i:i + crop_size, j:j + crop_size] = np.reshape(
+                kohonen.W[winner], (crop_size, crop_size)) * factor
     cv2.imwrite("output.png", decoded_image)
     plt.imshow(decoded_image, cmap='gray')
     plt.show()
@@ -48,11 +58,13 @@ def compress_image(filename, number_of_neurons, crop_size, number_of_crops,
     n_image_pixels = image.shape[0] * image.shape[1]
     n_crop_pixels = crop_size * crop_size
     not_compressed_size = n_image_pixels * 8
-    compressed_size = (n_image_pixels / n_crop_pixels) * np.ceil(np.log2(number_of_neurons)) + n_crop_pixels * number_of_neurons * 8
+    compressed_size = (n_image_pixels / n_crop_pixels) * np.ceil(
+        np.log2(number_of_neurons)) + n_crop_pixels * number_of_neurons * 8
     if normalize:
         compressed_size += (n_image_pixels / n_crop_pixels) * 8
-    compression_ratio = compressed_size / not_compressed_size
-    print(f"Compression ratio: {compression_ratio}")
+    print(f"Compression ratio: {not_compressed_size / compressed_size}")
+    print(f"MSE: {mse(image, decoded_image)}")
+    print(f"PSNR: {psnr(image, decoded_image)}")
 
 
 if __name__ == '__main__':
