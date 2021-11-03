@@ -1,4 +1,5 @@
 import argparse
+
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -20,12 +21,10 @@ def compress_image(filename, number_of_neurons, crop_size, number_of_crops,
 
     # extract random crops
     random_crops = np.array([
-        np.reshape(image[x:x + crop_size, y:y + crop_size], (-1, ))
+        np.reshape(image[x:x + crop_size, y:y + crop_size], (-1,))
         for x, y in zip(
-            np.random.randint(
-                0, image.shape[0] - crop_size, size=(number_of_crops, )),
-            np.random.randint(
-                0, image.shape[1] - crop_size, size=(number_of_crops, )))
+            np.random.randint(0, image.shape[0] - crop_size, size=(number_of_crops,)),
+            np.random.randint(0, image.shape[1] - crop_size, size=(number_of_crops,)))
     ])
 
     # clusterize random crops using kohonen network

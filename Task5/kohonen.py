@@ -2,6 +2,7 @@ import numpy as np
 
 
 class KohonenNetwork():
+
     def __init__(self, n_neurons: int, X: np.ndarray, normalize: bool = False):
         self.n_outputs = n_neurons
         self.n_inputs = X.shape[1]
@@ -18,11 +19,13 @@ class KohonenNetwork():
             self.W = self.W / np.sqrt(np.sum(self.W**2, axis=1, keepdims=True))
             self.orig_X = X
 
+
     def winner(self, x):
         if self.normalize:
             return np.argmax(np.matmul(self.W, x))
         else:
-            return np.argmin(np.sum((self.W - x)**2, axis=1))
+            return np.argmin(np.sum((self.W - x) ** 2, axis=1))
+
 
     def training_step(self, learning_rate):
         winners = set()
@@ -42,12 +45,13 @@ class KohonenNetwork():
                                                    size=(len(loosers),
                                                          self.n_inputs))
         if self.normalize:
-            W = W / np.sqrt(np.sum(W**2, axis=1, keepdims=True))
+            W = W / np.sqrt(np.sum(W ** 2, axis=1, keepdims=True))
 
         self._max_winner_step = np.max(self.W[list(winners)] -
                                        W[list(winners)])
         self._n_loosers = len(loosers)
         self.W = W
+
 
     def should_stop(self):
         return self._n_loosers == 0 and self._max_winner_step < 0.00001 * (
@@ -67,6 +71,7 @@ if __name__ == "__main__":
     moons, = ax.plot(kohonen.X[:, 0], kohonen.X[:, 1], 'b.')
     neurons, = ax.plot(kohonen.W[:, 0], kohonen.W[:, 1], 'ro')
 
+
     def update(frame):
         kohonen.training_step(learning_rate=0.1)
         if kohonen.should_stop():
@@ -74,6 +79,7 @@ if __name__ == "__main__":
             anim.pause()
         neurons.set_data(kohonen.W[:, 0], kohonen.W[:, 1])
         return moons, neurons
+
 
     anim = matplotlib.animation.FuncAnimation(fig,
                                               update,
