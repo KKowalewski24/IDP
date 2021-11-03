@@ -13,7 +13,8 @@ class KohonenNetwork():
                                                      self.n_inputs))
         self.normalize = normalize
         if normalize:
-            self.X = X / np.sqrt(np.sum(X**2, axis=1, keepdims=True))
+            self.X = X / np.sqrt(
+                np.sum(X.astype(np.float32)**2, axis=1, keepdims=True))
             self.W = self.W / np.sqrt(np.sum(self.W**2, axis=1, keepdims=True))
             self.orig_X = X
 
@@ -43,12 +44,13 @@ class KohonenNetwork():
         if self.normalize:
             W = W / np.sqrt(np.sum(W**2, axis=1, keepdims=True))
 
-        self._max_winner_step = np.max(self.W[list(winners)] - W[list(winners)])
+        self._max_winner_step = np.max(self.W[list(winners)] -
+                                       W[list(winners)])
         self._n_loosers = len(loosers)
         self.W = W
 
     def should_stop(self):
-        return self._n_loosers == 0 and self._max_winner_step < 0.0001 * (
+        return self._n_loosers == 0 and self._max_winner_step < 0.00001 * (
             np.max(self.X) - np.min(self.X))
 
 
