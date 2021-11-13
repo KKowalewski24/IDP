@@ -8,52 +8,48 @@ class KohonenNetwork():
         self.n_inputs = X.shape[1]
         self.random_generator = np.random.default_rng()
         self.X = X
-        self.W = self.random_generator.uniform(np.min(self.X),
-                                               np.max(self.X),
-                                               size=(self.n_outputs,
-                                                     self.n_inputs))
+        self.W = X[self.random_generator.integers(len(X), size=(self.n_outputs,))].astype(np.float32)
         self.normalize = normalize
         if normalize:
-            self.X = X / np.sqrt(np.sum(X ** 2, axis=1, keepdims=True))
+            self.X = X / np.sqrt(np.sum(X.astype(np.float32) ** 2, axis=1, keepdims=True))
             self.W = self.W / np.sqrt(np.sum(self.W ** 2, axis=1, keepdims=True))
             self.orig_X = X
 
 
-    def winner(self, x):
+    def winner(self, X: np.ndarray):
         if self.normalize:
-            return np.argmax(np.matmul(self.W, x))
+            return np.argmax(np.matmul(self.W, np.transpose(X)), axis=0)
         else:
-            return np.argmin(np.sum((self.W - x) ** 2, axis=1))
+            W = np.tile(self.W, (len(X), 1, 1))
+            X = np.reshape(np.repeat(X, self.n_outputs, axis=0),
+                           (len(X), self.n_outputs, self.n_inputs))
+            return np.argmin(np.sum((W - X) ** 2, axis=2), axis=1)
 
 
     def training_step(self, learning_rate):
-        winners = set()
         W = self.W.copy()
-        for x in self.X:
-            # find winner
-            winner = self.winner(x)
 
-            # update winner
+        # find and update winners
+        winners = self.winner(self.X)
+        for winner, x in zip(winners, self.X):
             W[winner] += learning_rate * (x - W[winner])
-            winners.add(winner)
 
         # reset total loosers (dead neurons)
-        loosers = list(set(range(len(W))) - winners)
-        W[loosers] = self.random_generator.uniform(np.min(self.X),
-                                                   np.max(self.X),
-                                                   size=(len(loosers),
-                                                         self.n_inputs))
+        loosers = list(set(range(len(W))) - set(winners))
+        W[loosers] = self.X[self.random_generator.integers(
+            len(self.X), size=(len(loosers),))].astype(np.float32)
+
         if self.normalize:
             W = W / np.sqrt(np.sum(W ** 2, axis=1, keepdims=True))
 
-        self._max_winner_step = np.max(self.W[list(winners)] - W[list(winners)])
+        self._max_winner_step = np.max(self.W[winners] - W[winners])
         self._n_loosers = len(loosers)
         self.W = W
 
 
     def should_stop(self):
-        return self._n_loosers == 0 and self._max_winner_step < 0.0001 * (
-                np.max(self.X) - np.min(self.X))
+        return self._n_loosers == 0 and self._max_winner_step < 0.00001 * (
+                    np.max(self.X) - np.min(self.X))
 
 
 if __name__ == "__main__":
@@ -63,7 +59,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     X, y = make_moons(n_samples=200, noise=0.1)
-    kohonen = KohonenNetwork(15, X, normalize=False)
+    kohonen = KohonenNetwork(20, X, normalize=False)
 
     fig, ax = plt.subplots()
     moons, = ax.plot(kohonen.X[:, 0], kohonen.X[:, 1], 'b.')
