@@ -56,4 +56,11 @@ for crop_size in crop_sizes:
     ax.set_xlabel("compression ratio")
     ax.set_ylabel("PSNR [dB]")
 
+    # plot number of neurons vs PSNR
+    fig, ax = plt.subplots()
+    ax.plot(df["number_of_neurons"], df["PSNR"], '-')
+    ax.plot(df["number_of_neurons"], df["PSNR"], 'o')
+    ax.set_xlabel("number of neurons")
+    ax.set_ylabel("PSNR [dB]")
+
     plt.show()
