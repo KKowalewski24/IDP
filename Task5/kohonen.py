@@ -7,10 +7,8 @@ class KohonenNetwork():
         self.n_inputs = X.shape[1]
         self.random_generator = np.random.default_rng()
         self.X = X
-        self.W = self.random_generator.uniform(np.min(self.X),
-                                               np.max(self.X),
-                                               size=(self.n_outputs,
-                                                     self.n_inputs))
+        self.W = X[self.random_generator.integers(
+            len(X), size=(self.n_outputs, ))].astype(np.float32)
         self.normalize = normalize
         if normalize:
             self.X = X / np.sqrt(
@@ -37,10 +35,9 @@ class KohonenNetwork():
 
         # reset total loosers (dead neurons)
         loosers = list(set(range(len(W))) - set(winners))
-        W[loosers] = self.random_generator.uniform(np.min(self.X),
-                                                   np.max(self.X),
-                                                   size=(len(loosers),
-                                                         self.n_inputs))
+        W[loosers] = self.X[self.random_generator.integers(
+            len(self.X), size=(len(loosers), ))].astype(np.float32)
+
         if self.normalize:
             W = W / np.sqrt(np.sum(W**2, axis=1, keepdims=True))
 
