@@ -46,7 +46,7 @@ def compress_image(filename, number_of_neurons, crop_size, number_of_crops,
                               (-1, )).astype(np.float32)
             factor = np.sqrt(np.sum(crop**2)) if normalize else 1.0
             crop = crop / factor
-            winner = kohonen.winner(crop)
+            winner = kohonen.winner(np.expand_dims(crop, axis=0))
             decoded_image[i:i + crop_size, j:j + crop_size] = np.reshape(
                 kohonen.W[winner], (crop_size, crop_size)) * factor
     cv2.imwrite("output.png", decoded_image)
