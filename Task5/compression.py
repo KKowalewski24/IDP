@@ -14,8 +14,13 @@ def psnr(X, Y):
     return 10 * np.log10(255.0**2 / mse(X, Y))
 
 
-def compress_image(filename, number_of_neurons, crop_size, number_of_crops,
-                   learning_rate, normalize, plot, output):
+def compress_image(filename,
+                   number_of_neurons,
+                   crop_size,
+                   number_of_crops,
+                   learning_rate,
+                   normalize,
+                   debug=False):
     # read image
     image = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
 
@@ -35,9 +40,10 @@ def compress_image(filename, number_of_neurons, crop_size, number_of_crops,
                              normalize=normalize)
     kohonen.training_step(learning_rate=learning_rate)
     while not kohonen.should_stop():
-        print(
-            f"dead neurons: {kohonen._n_loosers}\t max winner step: {kohonen._max_winner_step}"
-        )
+        if debug:
+            print(
+                f"dead neurons: {kohonen._n_loosers}\t max winner step: {kohonen._max_winner_step}"
+            )
         kohonen.training_step(learning_rate=learning_rate)
 
     # simulate decoded image view - replace each crop with activated neuron weights
@@ -51,10 +57,6 @@ def compress_image(filename, number_of_neurons, crop_size, number_of_crops,
             winner = kohonen.winner(np.expand_dims(crop, axis=0))
             decoded_image[i:i + crop_size, j:j + crop_size] = np.reshape(
                 kohonen.W[winner], (crop_size, crop_size)) * factor
-    cv2.imwrite(output if output else "output.png", decoded_image)
-    if plot:
-        plt.imshow(decoded_image, cmap='gray')
-        plt.show()
 
     # calculate compression ratio
     n_image_pixels = image.shape[0] * image.shape[1]
@@ -64,9 +66,9 @@ def compress_image(filename, number_of_neurons, crop_size, number_of_crops,
         np.log2(number_of_neurons)) + n_crop_pixels * number_of_neurons * 8
     if normalize:
         compressed_size += (n_image_pixels / n_crop_pixels) * 8
-    print(f"Compression ratio: {not_compressed_size / compressed_size}")
-    print(f"MSE: {mse(image, decoded_image)}")
-    print(f"PSNR: {psnr(image, decoded_image)}")
+
+    return decoded_image, not_compressed_size / compressed_size, psnr(
+        image, decoded_image)
 
 
 if __name__ == '__main__':
@@ -77,10 +79,19 @@ if __name__ == '__main__':
     parser.add_argument("--number-of-crops", type=int, required=True)
     parser.add_argument("--learning-rate", type=float, required=True)
     parser.add_argument("--normalize", action="store_true")
+    parser.add_argument("--debug", action="store_true")
     parser.add_argument("--plot", action="store_true")
     parser.add_argument("--output", type=str, required=False)
     args = parser.parse_args()
 
-    compress_image(args.filename, args.number_of_neurons, args.crop_size,
-                   args.number_of_crops, args.learning_rate, args.normalize,
-                   args.plot, args.output)
+    decoded_image, compression_ratio, PSNR = compress_image(
+        args.filename, args.number_of_neurons, args.crop_size,
+        args.number_of_crops, args.learning_rate, args.normalize, args.debug)
+
+    print(f"Compression ratio: {compression_ratio}")
+    print(f"PSNR: {PSNR}")
+    if args.output:
+        cv2.imwrite(args.output, decoded_image)
+    if args.plot:
+        plt.imshow(decoded_image, cmap='gray')
+        plt.show()
