@@ -1,17 +1,17 @@
 import argparse
 
 import cv2
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from kohonen import KohonenNetwork
 
 
 def mse(X, Y):
-    return np.mean((X.astype(np.float32) - Y.astype(np.float32))**2)
+    return np.mean((X.astype(np.float32) - Y.astype(np.float32)) ** 2)
 
 
 def psnr(X, Y):
-    return 10 * np.log10(255.0**2 / mse(X, Y))
+    return 10 * np.log10(255.0 ** 2 / mse(X, Y))
 
 
 def compress_image(filename,
@@ -26,12 +26,10 @@ def compress_image(filename,
 
     # extract random crops
     random_crops = np.array([
-        np.reshape(image[x:x + crop_size, y:y + crop_size], (-1, ))
+        np.reshape(image[x:x + crop_size, y:y + crop_size], (-1,))
         for x, y in zip(
-            np.random.randint(
-                0, image.shape[0] - crop_size, size=(number_of_crops, )),
-            np.random.randint(
-                0, image.shape[1] - crop_size, size=(number_of_crops, )))
+            np.random.randint(0, image.shape[0] - crop_size, size=(number_of_crops,)),
+            np.random.randint(0, image.shape[1] - crop_size, size=(number_of_crops,)))
     ])
 
     # clusterize random crops using kohonen network
@@ -50,9 +48,8 @@ def compress_image(filename,
     decoded_image = np.empty_like(image, dtype=np.float32)
     for i in range(0, image.shape[0], crop_size):
         for j in range(0, image.shape[1], crop_size):
-            crop = np.reshape(image[i:i + crop_size, j:j + crop_size],
-                              (-1, )).astype(np.float32)
-            factor = np.sqrt(np.sum(crop**2)) if normalize else 1.0
+            crop = np.reshape(image[i:i + crop_size, j:j + crop_size], (-1,)).astype(np.float32)
+            factor = np.sqrt(np.sum(crop ** 2)) if normalize else 1.0
             crop = crop / factor
             winner = kohonen.winner(np.expand_dims(crop, axis=0))
             decoded_image[i:i + crop_size, j:j + crop_size] = np.reshape(

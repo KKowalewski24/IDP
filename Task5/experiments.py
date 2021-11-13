@@ -1,10 +1,11 @@
-from compression import compress_image
-from concurrent.futures import ProcessPoolExecutor
-import matplotlib.pyplot as plt
 import math
-import pandas as pd
-from tqdm import tqdm
+from concurrent.futures import ProcessPoolExecutor
+
 import cv2
+import matplotlib.pyplot as plt
+import pandas as pd
+from compression import compress_image
+from tqdm import tqdm
 
 filename = "data/boat.png"
 crop_sizes = [4, 8]
